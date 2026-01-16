@@ -1,0 +1,23 @@
+[project]
+name = "renai-text-processor"
+version = "0.1.0"
+description = "Renai Text Processor - PDF/markdown parsing and semantic chunking"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pypdf>=4.0.0",
+    "python-multipart>=0.0.9",
+    "markdown>=3.6",
+    "beautifulsoup4>=4.12.0",
+    "tiktoken>=0.6.0",
+    "renai-shared",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

@@ -1,0 +1,27 @@
+[project]
+name = "renai"
+version = "0.1.0"
+description = "A Python microservices monorepo for building LLM applications"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+
+[tool.uv.workspace]
+members = [
+    "packages/shared",
+    "services/bff",
+    "services/llm-gateway",
+    "services/text-processor",
+    "services/embedding-service",
+    "services/rag-service",
+    "services/tool-service",
+    "services/agent-orchestrator",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+]
