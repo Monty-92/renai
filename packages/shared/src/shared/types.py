@@ -154,7 +154,7 @@ class AgentMessage(BaseModel):
 class AgentTask(BaseModel):
     """A task for an agent to execute."""
 
-    task_id: str
+    task_id: str | None = None
     description: str
     tools: list[str] = Field(default_factory=list)
     context: dict[str, Any] = Field(default_factory=dict)

@@ -14,6 +14,7 @@
 
 """Agent Orchestrator main application entry point."""
 
+import asyncio
 import json
 import re
 import uuid
@@ -24,7 +25,7 @@ from typing import Any
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
 from shared import get_settings, get_logger
@@ -284,7 +285,10 @@ async def health_check() -> ServiceResponse[dict[str, str]]:
 
 
 @app.post("/api/v1/tasks")
-async def create_task(task: AgentTask) -> ServiceResponse[dict[str, Any]]:
+async def create_task(
+    task: AgentTask,
+    background_tasks: BackgroundTasks,
+) -> ServiceResponse[dict[str, Any]]:
     """Create a new agent task."""
     # Generate task ID if not provided
     if not task.task_id:
@@ -294,21 +298,24 @@ async def create_task(task: AgentTask) -> ServiceResponse[dict[str, Any]]:
     state = TaskState(task_id=task.task_id, task=task)
     task_store[task.task_id] = state
 
-    # Run agent loop in background
-    # In production, this would be a proper background task (Celery, etc.)
-    try:
-        await run_agent_loop(state)
-    except Exception as e:
-        state.status = TaskStatus.FAILED
-        state.error = str(e)
+    # Schedule agent loop to run in background
+    async def run_in_background():
+        try:
+            await run_agent_loop(state)
+        except Exception as e:
+            state.status = TaskStatus.FAILED
+            state.error = str(e)
+            state.updated_at = datetime.utcnow()
+
+    # Add to background tasks
+    background_tasks.add_task(asyncio.create_task, run_in_background())
 
     return ServiceResponse(
         data={
             "task_id": task.task_id,
             "status": state.status,
-            "result": state.result,
         },
-        message=f"Task {task.task_id} created",
+        message=f"Task {task.task_id} created and scheduled",
     )
 
 

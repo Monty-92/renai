@@ -14,6 +14,8 @@
 
 """Tool Service main application entry point."""
 
+import ast
+import operator
 from typing import Any
 
 import uvicorn
@@ -28,6 +30,48 @@ settings = get_settings()
 
 # In-memory tool registry (would be database in production)
 tool_registry: dict[str, ToolDefinition] = {}
+
+# Safe arithmetic operators
+_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+def _safe_eval_arithmetic(expr: str) -> float:
+    """Safely evaluate arithmetic expressions using AST parsing."""
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(f"Invalid expression syntax: {e}") from e
+
+    def _eval_node(node: ast.AST) -> float:
+        if isinstance(node, ast.Expression):
+            return _eval_node(node.body)
+        elif isinstance(node, ast.Constant):
+            if isinstance(node.value, (int, float)):
+                return float(node.value)
+            raise ValueError(f"Unsupported constant type: {type(node.value)}")
+        elif isinstance(node, ast.BinOp):
+            op = _OPERATORS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {type(node.op).__name__}")
+            left = _eval_node(node.left)
+            right = _eval_node(node.right)
+            return op(left, right)
+        elif isinstance(node, ast.UnaryOp):
+            op = _OPERATORS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {type(node.op).__name__}")
+            return op(_eval_node(node.operand))
+        else:
+            raise ValueError(f"Unsupported expression type: {type(node).__name__}")
+
+    return _eval_node(tree)
 
 
 class RegisterToolRequest(BaseModel):
@@ -194,12 +238,14 @@ async def execute_tool(name: str, request: ExecuteToolRequest) -> ServiceRespons
 async def _execute_tool_impl(name: str, arguments: dict[str, Any]) -> Any:
     """Execute tool implementation."""
     if name == "calculator":
-        # Safe expression evaluation (basic arithmetic only)
+        # Safe expression evaluation using a simple parser
         expr = arguments["expression"]
+        # Only allow safe arithmetic characters
         allowed_chars = set("0123456789+-*/.(). ")
         if not all(c in allowed_chars for c in expr):
             raise ValueError("Invalid characters in expression")
-        result = eval(expr, {"__builtins__": {}}, {})  # noqa: S307
+        # Use a safe arithmetic evaluator
+        result = _safe_eval_arithmetic(expr)
         return {"result": result}
 
     elif name == "web_search":

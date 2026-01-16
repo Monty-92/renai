@@ -41,9 +41,16 @@ fi
 echo ""
 echo "Checking uv package manager..."
 if ! command -v uv &> /dev/null; then
-    echo "uv not found, installing..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="$HOME/.cargo/bin:$PATH"
+    echo "uv not found."
+    echo ""
+    echo "Please install uv manually using one of these methods:"
+    echo "  - pip: pip install uv"
+    echo "  - pipx: pipx install uv"
+    echo "  - Homebrew: brew install uv"
+    echo "  - Official installer: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo ""
+    echo "For more options, visit: https://github.com/astral-sh/uv#installation"
+    exit 1
 fi
 echo "✓ uv $(uv --version) found"
 
