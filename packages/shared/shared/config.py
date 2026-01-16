@@ -13,6 +13,9 @@ class BaseConfig(BaseSettings):
         extra="ignore",
     )
 
+    # CORS Configuration
+    cors_origins: str = "http://localhost:3000,http://localhost:8080"
+    
     # Database
     postgres_host: str = "localhost"
     postgres_port: int = 5432
@@ -64,3 +67,8 @@ class BaseConfig(BaseSettings):
             f"amqp://{self.rabbitmq_user}:{self.rabbitmq_password}"
             f"@{self.rabbitmq_host}:{self.rabbitmq_port}/"
         )
+    
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Get CORS origins as a list."""
+        return [origin.strip() for origin in self.cors_origins.split(",")]

@@ -9,9 +9,11 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# TODO: Configure CORS with environment-based origins for production
+# See services/bff/app/config.py for example
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"]  # Development only - restrict in production,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
