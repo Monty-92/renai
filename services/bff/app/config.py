@@ -15,7 +15,7 @@ class Config(BaseSettings):
 
     # CORS Configuration
     cors_origins: str = "http://localhost:3000,http://localhost:8080"
-    
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Get CORS origins as a list."""
