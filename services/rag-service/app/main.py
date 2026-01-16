@@ -13,7 +13,7 @@ app = FastAPI(
 # See services/bff/app/config.py for example
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"]  # Development only - restrict in production,
+    allow_origins=["*"],  # Development only - restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

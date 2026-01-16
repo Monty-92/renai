@@ -1,9 +1,9 @@
 """Configuration for BFF service."""
 
-from pydantic_settings import SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config:
+class Config(BaseSettings):
     """Configuration for BFF service."""
 
     model_config = SettingsConfigDict(
