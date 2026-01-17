@@ -3,17 +3,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .config import config
+
 app = FastAPI(
     title="Renai Embedding Service",
     description="Embedding generation service for text vectorization",
     version="0.1.0",
 )
 
-# TODO: Configure CORS with environment-based origins for production
-# See services/bff/app/config.py for example
+# Configure CORS with environment-based origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Development only - restrict in production
+    allow_origins=config.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
