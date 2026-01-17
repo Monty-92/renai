@@ -19,10 +19,23 @@ class BaseModel(PydanticBaseModel):
 
 
 class TimestampModel(BaseModel):
-    """Model with timestamp fields."""
+    """Model with timestamp fields.
+
+    Note:
+        Services should update ``updated_at`` when modifying and persisting
+        instances of this model, for example by calling :meth:`touch`.
+    """
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def touch(self) -> None:
+        """Update the ``updated_at`` timestamp to the current UTC time.
+
+        This method should be called by services before persisting changes to
+        an existing record to reflect the latest modification time.
+        """
+        self.updated_at = datetime.now(timezone.utc)
 
 
 class ResponseModel(BaseModel):
